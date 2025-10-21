@@ -33,8 +33,7 @@ jobs:
     - name: Create Deployment Branch
       shell: bash
       run: |- 
-        git pull
-        most_recent_ancestor=$(git merge-base origin/main ${{ inputs.GIT_TAG }})
+        most_recent_ancestor=$(git merge-base main ${{ inputs.GIT_TAG }})
         git checkout $most_recent_ancestor
         git checkout -b deployment-branch-${{ inputs.GIT_TAG }}
         git push --set-upstream origin deployment-branch-${{ inputs.GIT_TAG }}
