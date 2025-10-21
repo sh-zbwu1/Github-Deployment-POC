@@ -1,11 +1,5 @@
-name: Build Deploy
+name: Build
 on:
-  workflow_dispatch:
-    inputs:
-      GIT_TAG:
-        required: true
-        description: 'Tag to deploy'
-
   push:
     tags:
       - '*'
@@ -15,7 +9,7 @@ permissions:
   packages: write   
   attestations: write
   id-token: write
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
