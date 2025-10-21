@@ -13,6 +13,8 @@ permissions:
   contents: write
   pull-requests: write
   packages: write   
+  attestations: write
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,9 +43,14 @@ jobs:
         dotnet/dotnet publish "POC-App/POC-App.csproj" -c=Release -o=publish 
   
     - name: zip artifact
-      if: ${{ inputs.Create_Release || inputs.Create_Release == '' }}
       working-directory: ./publish
       run: zip -r POC.zip .
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v3
+      with:
+        subject-path: ./publish/POC.zip
+          
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
@@ -61,7 +68,7 @@ jobs:
     - name: Clean workspace
       shell: bash
       run: rm -rf ${{ github.workspace }}/*
-      
+
     - uses: actions/checkout@v4.1.0
       with:  
         ref: ${{ inputs.GIT_TAG || github.ref_name }}
