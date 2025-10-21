@@ -25,6 +25,14 @@ jobs:
       with:  
         ref: ${{ inputs.GIT_TAG || github.ref_name }}
 
+    - uses: actions/setup-dotnet@v4
+      with:
+        cache: false
+        dotnet-version: 8.0.x
+        cache-dependency-path: POC-App/POC-App.csproj
+      env:
+        DOTNET_INSTALL_DIR: dotnet
+
     - name: Publish API
       shell: bash
       run: |-
