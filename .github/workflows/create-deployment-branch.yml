@@ -51,7 +51,7 @@ jobs:
       shell: bash
       run: |- 
         gh pr create --title "Deployment Branch - ${{inputs.GIT_TAG}}" \
-         --body "Pull request created by the create-deployment-branch workflow - ${{inputs.GIT_TAG}} to ${{ env.MOST_RECENT_ANCESTOR }}"
+         --body "Pull request created by the create-deployment-branch workflow - ${{inputs.GIT_TAG}} to ${{ env.MOST_RECENT_ANCESTOR }}" \
          --base deployment-branch-${{ inputs.GIT_TAG }} --head head-branch-${{ inputs.GIT_TAG }}
       env:
         GH_TOKEN: ${{ github.token }}
