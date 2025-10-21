@@ -19,7 +19,7 @@ jobs:
       shell: bash
       run: rm -rf ${{ github.workspace }}/*
 
-    - name: Checkout main
+    - name: Checkout
       uses: actions/checkout@v4.1.0
       with:  
         ref: ${{ inputs.GIT_TAG }}
@@ -33,7 +33,8 @@ jobs:
     - name: Create Deployment Branch
       shell: bash
       run: |- 
-        most_recent_ancestor=$(git merge-base main ${{ inputs.GIT_TAG }})
+        git pull
+        most_recent_ancestor=$(git merge-base origin/main ${{ inputs.GIT_TAG }})
         git checkout $most_recent_ancestor
         git checkout -b deployment-branch-${{ inputs.GIT_TAG }}
         git push --set-upstream origin deployment-branch-${{ inputs.GIT_TAG }}
