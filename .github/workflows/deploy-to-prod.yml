@@ -60,9 +60,10 @@ jobs:
         most_recent_ancestor=$(git merge-base main ${{ inputs.GIT_TAG }})
         if [[ "$baseRefOid" != "$most_recent_ancestor" ]]
         then
-            echo "Most recent common ancestor of tag ${{ inputs.GIT_TAG }}'s' pull request was not the same as the most recent common ancestor of tag ${{ inputs.GIT_TAG }} and main"
+            echo "Most recent common ancestor of tag ${{ inputs.GIT_TAG }}'s' pull request was not the same as the most recent common ancestor of tag ${{ inputs.GIT_TAG }} and main. baseRefOid: ($baseRefOid) vs most_recent_ancestor: ($most_recent_ancestor)"
             exit 1
         fi
 
+        # TODO check reviews
       env:
         GH_TOKEN: ${{ github.token }}
