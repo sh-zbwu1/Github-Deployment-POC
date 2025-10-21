@@ -23,7 +23,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4.1.0
       with:  
-        fetch-depth: 0
+        fetch-depth: 0 # this fetch depth 0 is required to "fetch all history for all branches and tags"
     
     # ignore the previous failure if it exists
     - name: Create Head Branch
