@@ -37,11 +37,13 @@ jobs:
         git checkout $most_recent_ancestor
         git checkout -b deployment-branch-${{ inputs.GIT_TAG }}
         git push --set-upstream origin deployment-branch-${{ inputs.GIT_TAG }}
-        
+        echo "MOST_RECENT_ANCESTOR=$most_recent_ancestor" >> $GITHUB_ENV
+
     - name: Create Pull Request from Head to Deployment Branch
       shell: bash
       run: |- 
         gh pr create --title "Deployment Branch - ${{inputs.GIT_TAG}}" \
+         --body "Pull request created by the create-deployment-branch workflow - ${{inputs.GIT_TAG}} to ${{ env.MOST_RECENT_ANCESTOR }}"
          --base deployment-branch-${{ inputs.GIT_TAG }} --head head-branch-${{ inputs.GIT_TAG }}
       env:
         GH_TOKEN: ${{ github.token }}
