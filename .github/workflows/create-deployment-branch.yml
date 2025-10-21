@@ -29,6 +29,7 @@ jobs:
     
     # ignore the previous failure if it exists
     - name: Create Head Branch
+      id: create-head-branch
       if: always() 
       shell: bash
       run: |- 
@@ -36,7 +37,8 @@ jobs:
         git push --set-upstream origin head-branch-${{ inputs.GIT_TAG }}
     
     - name: Create Deployment Branch
-      if: always() 
+      id: create-deployment-branch
+      if: steps.create-head-branch.outcome == 'success'
       shell: bash
       run: |- 
         most_recent_ancestor=$(git merge-base origin/main ${{ inputs.GIT_TAG }})
@@ -46,7 +48,8 @@ jobs:
         echo "MOST_RECENT_ANCESTOR=$most_recent_ancestor" >> $GITHUB_ENV
 
     - name: Create Pull Request from Head to Deployment Branch
-      if: always() 
+      id: create-pull-request
+      if: steps.create-deployment-branch.outcome == 'success'
       shell: bash
       run: |- 
         gh pr create --title "Deployment Branch - ${{inputs.GIT_TAG}}" \
