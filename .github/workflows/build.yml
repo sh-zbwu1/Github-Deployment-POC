@@ -1,0 +1,70 @@
+name: Build Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      GIT_TAG:
+        required: true
+        description: 'Tag to deploy'
+
+  push:
+    tags:
+      - '*'
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write   
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clean workspace
+      shell: bash
+      run: rm -rf ${{ github.workspace }}/*
+
+    - uses: actions/checkout@v4.1.0
+      with:  
+        ref: ${{ inputs.GIT_TAG || github.ref_name }}
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        cache: true
+        dotnet-version: 8.0.x
+        cache-dependency-path: POC-App/POC-App.csproj
+      env:
+        DOTNET_INSTALL_DIR: dotnet
+
+    - name: Publish API
+      shell: bash
+      run: |-
+        dotnet/dotnet restore "POC-App/POC-App.csproj";
+        dotnet/dotnet clean "POC-App/POC-App.csproj";
+        dotnet/dotnet publish "POC-App/POC-App.csproj" -c=Release -o=publish 
+  
+    - name: zip artifact
+      if: ${{ inputs.Create_Release || inputs.Create_Release == '' }}
+      working-directory: ./publish
+      run: zip -r POC.zip .
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: POC-${{inputs.GIT_TAG || github.ref_name}}
+        path: ./publish/POC.zip
+        retention-days: 7
+        overwrite: true
+
+
+  create-release:        
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: POC-${{inputs.GIT_TAG || github.ref_name}}
+    
+    - name: Create Release
+      id: create_release
+      shell: bash
+      run: |- 
+        ls
+        gh release create ${{inputs.GIT_TAG || github.ref_name}} POC.zip
