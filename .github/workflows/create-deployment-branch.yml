@@ -46,7 +46,7 @@ jobs:
         git push --set-upstream origin deployment-branch-${{ inputs.GIT_TAG }}
         echo "MOST_RECENT_ANCESTOR=$most_recent_ancestor" >> $GITHUB_ENV
         
-    - name: Create Pull Request from Head to Deployment Branch
+    - name: Create Pull Request from Head to Deployment Branch 
       id: create-pull-request
       shell: bash
       run: |- 
