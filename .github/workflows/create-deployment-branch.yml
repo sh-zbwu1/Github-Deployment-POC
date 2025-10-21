@@ -35,3 +35,5 @@ jobs:
       shell: bash
       run: |- 
         git checkout -b head-branch-${{ inputs.GIT_TAG }}
+        git checkout ${{ inputs.GIT_TAG }}
+        git push --set-upstream origin head-branch-${{ inputs.GIT_TAG }}
