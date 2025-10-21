@@ -23,8 +23,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4.1.0
       with:  
-        ref: main
-        fetch-tags: true
+        fetch-depth: 0
     
     # ignore the previous failure if it exists
     - name: Create Head Branch
