@@ -58,6 +58,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+    - name: Clean workspace
+      shell: bash
+      run: rm -rf ${{ github.workspace }}/*
+      
+    - uses: actions/checkout@v4.1.0
+      with:  
+        ref: ${{ inputs.GIT_TAG || github.ref_name }}
+
     - name: Download Artifact
       uses: actions/download-artifact@v4
       with:
