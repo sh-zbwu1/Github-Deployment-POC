@@ -1,4 +1,4 @@
-name: Create Deployment Branch
+name: Deploy To Prod
 on:
   workflow_dispatch:
     inputs:
