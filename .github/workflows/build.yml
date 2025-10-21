@@ -69,3 +69,5 @@ jobs:
       run: |- 
         ls
         gh release create ${{inputs.GIT_TAG || github.ref_name}} POC.zip
+      env:
+        GH_TOKEN: ${{ github.token }}
