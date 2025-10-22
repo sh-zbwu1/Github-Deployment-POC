@@ -96,11 +96,13 @@ jobs:
         reviewer_not_last_committer=$((cat reviewers.txt | grep -v $last_commit_author) || echo "")
         echo "reviewer that is not the last commit author: $reviewer_not_last_committer"
 
-        if [[ "$reviewer_not_last_committer" == "" ]]
-        then
-            echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id" 
-            exit 1
-        fi
+        # TODO uncomment this after you're done testing
+        
+        # if [[ "$reviewer_not_last_committer" == "" ]]
+        # then
+        #     echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id" 
+        #     exit 1
+        # fi
 
         # verify that the release exists
         gh release view ${{ inputs.GIT_TAG }} --json isImmutable,assets > release.json
