@@ -80,7 +80,7 @@ jobs:
         echo "reviewers.txt:"
         cat reviewers.txt
 
-        # get the last commiter
+        # get the last committer
         gh pr view $pr_id --json commits > commits.json
         echo "commits.json:" 
         cat commits.json
@@ -89,10 +89,10 @@ jobs:
         echo "last commit author: $last_commit_author"
 
         # reviewer that is not the last commit author
-        reviewer_not_last_commiter=$((cat reviewers.txt | grep -v $last_commit_author) || echo "")
-        echo "reviewer that is not the last commit author: $reviewer_not_last_commiter"
+        reviewer_not_last_committer=$((cat reviewers.txt | grep -v $last_commit_author) || echo "")
+        echo "reviewer that is not the last commit author: $reviewer_not_last_committer"
 
-        if [[ "$reviewer_not_last_commiter" == "" ]]
+        if [[ "$reviewer_not_last_committer" == "" ]]
         then
             echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id" 
             exit 1
