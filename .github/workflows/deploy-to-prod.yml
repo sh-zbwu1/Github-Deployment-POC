@@ -1,4 +1,5 @@
 name: Deploy To Prod
+run-name: Deploy To Prod - ${{ inputs.GIT_TAG }}
 on:
   workflow_dispatch:
     inputs:
@@ -64,6 +65,23 @@ jobs:
             exit 1
         fi
 
-        # TODO check reviews
+        # check that it was reviewed by someone who was not the last committer
+        gh pr view $pr_id --json reviews > reviews.json
+        jq '.reviews | .[] | select(.state=="APPROVED") | .author | .login' reviews.json | tr -d \" > reviewers.txt
+
+        # get the last commiter
+        gh pr view $pr_id --json commits > commits.json
+        last_commit_author=$(jq '.commits | .[0] | .authors | .[0] | .login' commits.json | tr -d \")
+        
+        # reviewer that is not the last commit author
+        reviewer_not_last_commiter=$(cat reviewers.txt | grep -v $last_commit_author)
+        
+        if [[ "$reviewer_not_last_commiter" == "" ]]
+        then
+            echo "Could not find a reviewer that was not the last commit author for pull request #$pr_id"
+            exit 1
+        fi
+
+        # all checks passed if this point is reached
       env:
         GH_TOKEN: ${{ github.token }}
