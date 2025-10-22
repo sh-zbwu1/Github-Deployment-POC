@@ -36,7 +36,7 @@ jobs:
         pr_id=$(jq '[.[] | .number][0]' pr_list.json | tr -d \")
         if [[ "$pr_id" == "" ]]
         then
-            echo "Could not find a merged pull request for deployment-branch-${{ inputs.GIT_TAG }}"
+            echo "::error::Could not find a merged pull request for deployment-branch-${{ inputs.GIT_TAG }}"
             exit 1
         fi
         
@@ -45,7 +45,7 @@ jobs:
         headRefOid=$(jq '.headRefOid' head.json | tr -d \")
         if [[ "$headRefOid" == "" ]]
         then
-            echo "Could not get the headRefOid for the pull request #$pr_id"
+            echo "::error::Could not get the headRefOid for the pull request #$pr_id"
             exit 1
         fi
 
@@ -54,14 +54,14 @@ jobs:
         baseRefOid=$(jq '.baseRefOid' base.json | tr -d \")
         if [[ "$baseRefOid" == "" ]]
         then
-            echo "Could not get the baseRefOid for the pull request #$pr_id"
+            echo "::error::Could not get the baseRefOid for the pull request #$pr_id"
             exit 1
         fi
 
         most_recent_ancestor=$(git merge-base main ${{ inputs.GIT_TAG }})
         if [[ "$baseRefOid" != "$most_recent_ancestor" ]]
         then
-            echo "Most recent common ancestor of tag ${{ inputs.GIT_TAG }}'s' pull request was not the same as the most recent common ancestor of tag ${{ inputs.GIT_TAG }} and main. baseRefOid: ($baseRefOid) vs most_recent_ancestor: ($most_recent_ancestor)"
+            echo "::error::Most recent common ancestor of tag ${{ inputs.GIT_TAG }}'s' pull request was not the same as the most recent common ancestor of tag ${{ inputs.GIT_TAG }} and main. baseRefOid: ($baseRefOid) vs most_recent_ancestor: ($most_recent_ancestor)"
             exit 1
         fi
 
@@ -78,7 +78,7 @@ jobs:
         
         if [[ "$reviewer_not_last_commiter" == "" ]]
         then
-            echo "Could not find a reviewer that was not the last commit author for pull request #$pr_id"
+            echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id"
             exit 1
         fi
 
