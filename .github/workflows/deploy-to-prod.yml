@@ -27,11 +27,15 @@ jobs:
     - name: Check that a pull request was made
       shell: bash
       run: |- 
+
+        # get the tag's commit sha
+        tagCommitSha=$(git rev-list -n 1 ${{ inputs.GIT_TAG }})
+
         # get the pull requests merged into branch deployment-branch-${{ inputs.GIT_TAG }}
-        gh pr list --search "base:deployment-branch-${{ inputs.GIT_TAG }}" --state merged --json number > pr_list.json
+        gh pr list --search "$tagCommitSha" --state merged --json number > pr_list.json
         
         # get the most recent pull request number 
-        pr_id=$(jq '[.[] | .number][0]' pr_list.json | tr -d \")
+        pr_id=$(jq '[.[] | .number][-1]' pr_list.json | tr -d \")
         echo "Found PR #$pr_id"
         if [[ "$pr_id" == "" ]]
         then
@@ -97,7 +101,36 @@ jobs:
             echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id" 
             exit 1
         fi
-         
+
+        # verify that the release exists
+        gh release view ${{ inputs.GIT_TAG }} --json isImmutable,assets > release.json
+        echo "release: "
+        cat release.json
+        isImmutable=$(jq '.isImmutable' release.json | tr -d \")
+        
+        # verify that it is immutable
+        if [[ "$isImmutable" != "true" ]]
+        then
+            echo "::error::Release for ${{ inputs.GIT_TAG }} was not immutable" 
+            exit 1
+        fi
+
+        # verify that the assets have attestations
+        mkdir release-downloads
+        cd release-downloads
+        gh release download ${{ inputs.GIT_TAG }}
+        ls
+        for filename in ./; do
+            # TODO this needs to be changed to --owner=SelectHealth instead of --repo=sh-zbwu1/Github-Deployment-POC
+            gh attestation verify $filename --repo=sh-zbwu1/Github-Deployment-POC --format json > $filename-attestation.json
+            attestation=$(jq ' .[0] | .verificationResult | .statement | .subject | .[0] | .name ' $filename-attestation.json)
+            if [[ "$attestation" == "" ]]
+            then
+                echo "::error::Attestation for file $filename was not found" 
+                exit 1
+            fi
+        done
+
         echo "All checks passed"
 
         # all checks passed if this point is reached
