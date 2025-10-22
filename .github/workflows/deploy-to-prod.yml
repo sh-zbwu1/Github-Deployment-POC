@@ -39,6 +39,8 @@ jobs:
             echo "::error::Could not find a merged pull request for deployment-branch-${{ inputs.GIT_TAG }}"
             exit 1
         fi
+
+        echo "Found PR #$pr_id"
         
         # get the head ref (should be the same commit hash as the given tag)
         gh pr view $pr_id --json headRefOid > head.json
@@ -49,6 +51,8 @@ jobs:
             exit 1
         fi
 
+        echo "head ref: $headRefOid"
+
         # get the base ref (should be the same commit hash as the most recent common ancestor of main & the given tag)
         gh pr view $pr_id --json baseRefOid > base.json
         baseRefOid=$(jq '.baseRefOid' base.json | tr -d \")
@@ -58,12 +62,50 @@ jobs:
             exit 1
         fi
 
+        echo "base ref: $baseRefOid"
+
+
         most_recent_ancestor=$(git merge-base main ${{ inputs.GIT_TAG }})
+
+        echo "most recent ancestor: $most_recent_ancestor"
+
         if [[ "$baseRefOid" != "$most_recent_ancestor" ]]
         then
             echo "::error::Most recent common ancestor of tag ${{ inputs.GIT_TAG }}'s' pull request was not the same as the most recent common ancestor of tag ${{ inputs.GIT_TAG }} and main. baseRefOid: ($baseRefOid) vs most_recent_ancestor: ($most_recent_ancestor)"
             exit 1
         fi
 
+
+
+        # check that it was reviewed by someone who was not the last committer
+        gh pr view $pr_id --json reviews > reviews.json
+        echo "reviews.json:"
+        cat reviews.json
+        
+        jq '.reviews | .[] | select(.state=="APPROVED") | .author | .login' reviews.json | tr -d \" > reviewers.txt
+        echo "reviewers.txt:"
+        cat reviewers.txt
+
+        # get the last commiter
+        gh pr view $pr_id --json commits > commits.json
+        echo "commits.json:" 
+        cat commits.json
+
+        last_commit_author=$(jq '.commits | .[0] | .authors | .[0] | .login' commits.json | tr -d \")
+        echo "last commit author: $last_commit_author"
+
+        # reviewer that is not the last commit author
+        reviewer_not_last_commiter=$(cat reviewers.txt | grep -v $last_commit_author)
+        echo "reviewer that is not the last commit author: $reviewer_not_last_commiter"
+
+        if [[ "$reviewer_not_last_commiter" == "" ]]
+        then
+            echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id" 
+            exit 1
+        fi
+         
+        echo "All checks passed"
+
+        # all checks passed if this point is reached
       env:
         GH_TOKEN: ${{ github.token }}
