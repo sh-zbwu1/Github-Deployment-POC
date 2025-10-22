@@ -126,10 +126,11 @@ jobs:
             # TODO this needs to be changed to --owner=SelectHealth instead of --repo=sh-zbwu1/Github-Deployment-POC
             echo "Checking attestation for file $filename"
             gh attestation verify $filename --repo=sh-zbwu1/Github-Deployment-POC --format json > $filename-attestation.json
-            attestation=$(jq ' .[0] | .verificationResult | .statement | .subject | .[0] | .name ' $filename-attestation.json)
-            if [[ "$attestation" == "" ]]
+            githubWorkflowSHA=$(jq '.[0] | .verificationResult | .signature | .certificate | .githubWorkflowSHA' $filename-attestation.json)
+            # check that the attestation's SHA for the asset is the same as the git tag's commit SHA
+            if [[ "$githubWorkflowSHA" != "$tagCommitSha" ]]
             then
-                echo "::error::Attestation for file $filename was not found" 
+                echo "::error::Attestation for file $filename failed" 
                 exit 1
             fi
         done
