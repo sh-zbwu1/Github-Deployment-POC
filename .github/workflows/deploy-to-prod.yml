@@ -95,7 +95,7 @@ jobs:
         echo "last commit author: $last_commit_author"
 
         # reviewer that is not the last commit author
-        reviewer_not_last_commiter=$(cat reviewers.txt | grep -v $last_commit_author)
+        reviewer_not_last_commiter=$((cat reviewers.txt | grep -v $last_commit_author) || echo "")
         echo "reviewer that is not the last commit author: $reviewer_not_last_commiter"
 
         if [[ "$reviewer_not_last_commiter" == "" ]]
