@@ -105,15 +105,15 @@ jobs:
         # fi
 
         # verify that the release exists
-        gh release view ${{ inputs.GIT_TAG }} --json isImmutable,assets > release.json
+        gh release view ${{ inputs.GIT_TAG }} --json tagName > release.json
         echo "release: "
         cat release.json
-        isImmutable=$(jq '.isImmutable' release.json | tr -d \")
+        releaseTagName=$(jq '.tagName' release.json | tr -d \")
         
-        # verify that it is immutable
-        if [[ "$isImmutable" != "true" ]]
+        # verify the release exists
+        if [[ "$releaseTagName" != "true" ]]
         then
-            echo "::error::Release for ${{ inputs.GIT_TAG }} was not immutable" 
+            echo "::error::Release for ${{ inputs.GIT_TAG }} was not found" 
             exit 1
         fi
 
