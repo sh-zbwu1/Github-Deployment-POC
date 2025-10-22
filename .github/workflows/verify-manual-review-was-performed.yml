@@ -1,5 +1,5 @@
-name: Deploy To Prod
-run-name: Deploy To Prod - ${{ inputs.GIT_TAG }}
+name: Verify Manual Review Was Performed
+run-name: Verify Manual Review Was Performed - ${{ inputs.GIT_TAG }}
 on:
   workflow_dispatch:
     inputs:
@@ -97,7 +97,7 @@ jobs:
         echo "reviewer that is not the last commit author: $reviewer_not_last_committer"
 
         # TODO uncomment this after you're done testing
-        
+
         # if [[ "$reviewer_not_last_committer" == "" ]]
         # then
         #     echo "::error::Could not find a reviewer that was not the last commit author for pull request #$pr_id" 
