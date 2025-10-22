@@ -124,6 +124,7 @@ jobs:
         ls
         for filename in ./*; do
             # TODO this needs to be changed to --owner=SelectHealth instead of --repo=sh-zbwu1/Github-Deployment-POC
+            echo "Checking attestation for file $filename"
             gh attestation verify $filename --repo=sh-zbwu1/Github-Deployment-POC --format json > $filename-attestation.json
             attestation=$(jq ' .[0] | .verificationResult | .statement | .subject | .[0] | .name ' $filename-attestation.json)
             if [[ "$attestation" == "" ]]
