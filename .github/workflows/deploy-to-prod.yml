@@ -34,39 +34,36 @@ jobs:
         
         # get the most recent pull request number 
         pr_id=$(jq '[.[] | .number][0]' pr_list.json | tr -d \")
+        echo "Found PR #$pr_id"
         if [[ "$pr_id" == "" ]]
         then
             echo "::error::Could not find a merged pull request for deployment-branch-${{ inputs.GIT_TAG }}"
             exit 1
         fi
 
-        echo "Found PR #$pr_id"
-        
         # get the head ref (should be the same commit hash as the given tag)
         gh pr view $pr_id --json headRefOid > head.json
         headRefOid=$(jq '.headRefOid' head.json | tr -d \")
+        echo "head ref: $headRefOid"
         if [[ "$headRefOid" == "" ]]
         then
             echo "::error::Could not get the headRefOid for the pull request #$pr_id"
             exit 1
         fi
 
-        echo "head ref: $headRefOid"
 
         # get the base ref (should be the same commit hash as the most recent common ancestor of main & the given tag)
         gh pr view $pr_id --json baseRefOid > base.json
         baseRefOid=$(jq '.baseRefOid' base.json | tr -d \")
+        echo "base ref: $baseRefOid"
         if [[ "$baseRefOid" == "" ]]
         then
             echo "::error::Could not get the baseRefOid for the pull request #$pr_id"
             exit 1
         fi
 
-        echo "base ref: $baseRefOid"
-
 
         most_recent_ancestor=$(git merge-base main ${{ inputs.GIT_TAG }})
-
         echo "most recent ancestor: $most_recent_ancestor"
 
         if [[ "$baseRefOid" != "$most_recent_ancestor" ]]
@@ -74,7 +71,6 @@ jobs:
             echo "::error::Most recent common ancestor of tag ${{ inputs.GIT_TAG }}'s' pull request was not the same as the most recent common ancestor of tag ${{ inputs.GIT_TAG }} and main. baseRefOid: ($baseRefOid) vs most_recent_ancestor: ($most_recent_ancestor)"
             exit 1
         fi
-
 
 
         # check that it was reviewed by someone who was not the last committer
