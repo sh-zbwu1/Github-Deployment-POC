@@ -29,17 +29,14 @@ jobs:
     - name: Check that a pull request was made
       shell: bash
       run: |- 
-        # get the pull requests merged into branch deployment-branch-${{ inputs.GIT_TAG }}
         gh pr list --search "base:deployment-branch-${{ inputs.GIT_TAG }}" --state merged --json number > pr_list.json
         
-        # get the most recent pull request number 
         pr_id=$(jq '[.[] | .number][0]' pr_list.json | tr -d \")
         if [[ "$pr_id" == "" ]]
         then
             echo "::error::foobar" && exit 1
         fi
         
-        # get the head ref (should be the same commit hash as the given tag)
         gh pr view $pr_id --json headRefOid > head.json
         headRefOid=$(jq '.headRefOid' head.json | tr -d \")
         if [[ "$headRefOid" == "" ]]
@@ -47,7 +44,6 @@ jobs:
             echo "::error::foobar" && exit 1
         fi
 
-        # get the base ref (should be the same commit hash as the most recent common ancestor of main & the given tag)
         gh pr view $pr_id --json baseRefOid > base.json
         baseRefOid=$(jq '.baseRefOid' base.json | tr -d \")
         if [[ "$baseRefOid" == "" ]]
@@ -61,15 +57,12 @@ jobs:
             echo "::error::foobar" && exit 1
         fi
 
-        # check that it was reviewed by someone who was not the last committer
         gh pr view $pr_id --json reviews > reviews.json
         jq '.reviews | .[] | select(.state=="APPROVED") | .author | .login' reviews.json | tr -d \" > reviewers.txt
 
-        # get the last commiter
         gh pr view $pr_id --json commits > commits.json
         last_commit_author=$(jq '.commits | .[0] | .authors | .[0] | .login' commits.json | tr -d \")
         
-        # reviewer that is not the last commit author
         reviewer_not_last_commiter=$(cat reviewers.txt | grep -v $last_commit_author)
         
         if [[ "$reviewer_not_last_commiter" == "" ]]
@@ -77,6 +70,5 @@ jobs:
             echo "::error::foobar" && exit 1
         fi
 
-        # all checks passed if this point is reached
       env:
         GH_TOKEN: ${{ github.token }}
