@@ -1,0 +1,18 @@
+name: Find PRs Where I Am The Reviewer
+on:
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+
+jobs:
+  find-prs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Find PRs where I am a reviewer
+      shell: bash
+      run: |-
+        gh pr list --search "review-requested:@me" --json number,title,url,author,reviewRequests \
+          --repo ${{ github.repository }}
+      env:
+        GH_TOKEN: ${{ github.token }}
